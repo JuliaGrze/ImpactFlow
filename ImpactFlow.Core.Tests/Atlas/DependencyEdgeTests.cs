@@ -18,8 +18,8 @@ namespace ImpactFlow.Core.Tests.Atlas
 
             //Assert
             Assert.Equal(id, edge.Id);
-            Assert.Equal(dependentNodeId, edge.DependentNodeId);
-            Assert.Equal(dependencyNodeId, edge.DependencyNodeId);
+            Assert.Equal(dependentNodeId, edge.SourceNodeId);
+            Assert.Equal(dependencyNodeId, edge.TargetNodeId);
             Assert.Equal(DependencyMode.Required, edge.Mode);
             Assert.Equal(0.8m, edge.ImportanceWeight);
             Assert.Equal(delay, edge.PropagationDelay);
