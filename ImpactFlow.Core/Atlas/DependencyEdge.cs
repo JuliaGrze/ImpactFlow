@@ -11,8 +11,8 @@ namespace ImpactFlow.Core.Atlas
     public class DependencyEdge
     {
         public Guid Id { get; set; }
-        public Guid DependentNodeId { get; set; } // np.: Autoryzacja płatności
-        public Guid DependencyNodeId { get; } // np.: Payment API
+        public Guid SourceNodeId { get; set; }  // np. Payment API
+        public Guid TargetNodeId { get; }  // np. Autoryzacja płatności
         public DependencyMode Mode { get; }
 
         /// <summary>
@@ -28,24 +28,24 @@ namespace ImpactFlow.Core.Atlas
         public TimeSpan PropagationDelay { get; }
 
         public DependencyEdge(
-            Guid id,
-            Guid dependentNodeId,
-            Guid dependencyNodeId,
-            DependencyMode mode,
-            decimal importanceWeight,
-            TimeSpan propagationDelay)
+          Guid id,
+          Guid sourceNodeId,
+          Guid targetNodeId,
+          DependencyMode mode,
+          decimal importanceWeight,
+          TimeSpan propagationDelay)
         {
             if (id == Guid.Empty)
                 throw new ArgumentException("Identyfikator zależności nie może być pusty.", nameof(id));
 
-            if (dependentNodeId == Guid.Empty)
-                throw new ArgumentException("Identyfikator elementu zależnego nie może być pusty.", nameof(dependentNodeId));
+            if (sourceNodeId == Guid.Empty)
+                throw new ArgumentException("Identyfikator węzła źródłowego nie może być pusty.", nameof(sourceNodeId));
 
-            if (dependencyNodeId == Guid.Empty)
-                throw new ArgumentException("Identyfikator zależności nie może być pusty.", nameof(dependencyNodeId));
+            if (targetNodeId == Guid.Empty)
+                throw new ArgumentException("Identyfikator węzła docelowego nie może być pusty.", nameof(targetNodeId));
 
-            if (dependentNodeId == dependencyNodeId)
-                throw new ArgumentException("Węzeł nie może bezpośrednio zależeć od samego siebie.", nameof(dependencyNodeId));
+            if (sourceNodeId == targetNodeId)
+                throw new ArgumentException("Węzeł nie może bezpośrednio wpływać na samego siebie.", nameof(targetNodeId));
 
             if (!Enum.IsDefined(mode))
                 throw new ArgumentOutOfRangeException(nameof(mode), "Nieznany tryb zależności.");
@@ -57,8 +57,8 @@ namespace ImpactFlow.Core.Atlas
                 throw new ArgumentOutOfRangeException(nameof(propagationDelay), "Opóźnienie propagacji nie może być ujemne.");
 
             Id = id;
-            DependentNodeId = dependentNodeId;
-            DependencyNodeId = dependencyNodeId;
+            SourceNodeId = sourceNodeId;
+            TargetNodeId = targetNodeId;
             Mode = mode;
             ImportanceWeight = importanceWeight;
             PropagationDelay = propagationDelay;
