@@ -5,7 +5,7 @@
     /// </summary>
     public enum NodeType
     {
-        BuisnessProcess,
+        BusinessProcess,
         ProcessStep,
         System,
         ExternalService,

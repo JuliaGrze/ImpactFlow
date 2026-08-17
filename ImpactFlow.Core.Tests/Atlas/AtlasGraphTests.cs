@@ -27,7 +27,7 @@ namespace ImpactFlow.Core.Tests.Atlas
         {
             var paymentApi = CreateNode("Payment API", NodeType.ExternalService);
             var paymentAuthorization = CreateNode("Autoryzacja płatności", NodeType.ProcessStep);
-            var orderHandling = CreateNode("Obsługa zamówienia", NodeType.BuisnessProcess);
+            var orderHandling = CreateNode("Obsługa zamówienia", NodeType.BusinessProcess);
 
             var paymentEdge = CreateEdge(paymentApi.Id, paymentAuthorization.Id);
             var processEdge = CreateEdge(paymentAuthorization.Id, orderHandling.Id);

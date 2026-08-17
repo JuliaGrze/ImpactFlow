@@ -1,39 +1,46 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ImpactFlow.Core.Atlas
+﻿namespace ImpactFlow.Core.Atlas
 {
+
     /// <summary>
-    /// Reprezentuje skierowaną zależność: element zależny -> jego zależność
-    /// np.: Autoryzacja płatności -> Payment API
+    /// Reprezentuje połączenie, po którym wpływ problemu przechodzi
+    /// z węzła źródłowego do węzła docelowego.
+    /// Przykład: Payment API → Autoryzacja płatności.
     /// </summary>
-    public class DependencyEdge
+    public sealed class DependencyEdge
     {
-        public Guid Id { get; set; }
-        public Guid SourceNodeId { get; set; }  // np. Payment API
-        public Guid TargetNodeId { get; }  // np. Autoryzacja płatności
+        public Guid Id { get; }
+
+        /// <summary>
+        /// Węzeł, z którego rozpoczyna się przepływ wpływu.
+        /// Przykład: Payment API.
+        /// </summary>
+        public Guid SourceNodeId { get; }
+
+        /// <summary>
+        /// Węzeł, który może zostać dotknięty problemem źródła.
+        /// Przykład: Autoryzacja płatności.
+        /// </summary>
+        public Guid TargetNodeId { get; }
+
         public DependencyMode Mode { get; }
 
         /// <summary>
-        /// Określa siłę przenoszonego wpływu
-        /// 1.0  → pełny wpływ
-        /// 0.8  → 80% wpływu
+        /// Określa, jaka część wpływu przechodzi do węzła docelowego.
         /// </summary>
         public decimal ImportanceWeight { get; }
 
         /// <summary>
-        /// Określa, po jakim czasie problem stanie się odczuwalny
+        /// Określa czas, po którym wpływ dociera do węzła docelowego.
         /// </summary>
         public TimeSpan PropagationDelay { get; }
 
         public DependencyEdge(
-          Guid id,
-          Guid sourceNodeId,
-          Guid targetNodeId,
-          DependencyMode mode,
-          decimal importanceWeight,
-          TimeSpan propagationDelay)
+            Guid id,
+            Guid sourceNodeId,
+            Guid targetNodeId,
+            DependencyMode mode,
+            decimal importanceWeight,
+            TimeSpan propagationDelay)
         {
             if (id == Guid.Empty)
                 throw new ArgumentException("Identyfikator zależności nie może być pusty.", nameof(id));
@@ -63,6 +70,5 @@ namespace ImpactFlow.Core.Atlas
             ImportanceWeight = importanceWeight;
             PropagationDelay = propagationDelay;
         }
-
     }
 }
