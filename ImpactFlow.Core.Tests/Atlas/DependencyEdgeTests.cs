@@ -9,17 +9,17 @@ namespace ImpactFlow.Core.Tests.Atlas
         {
             //Arrange
             var id = Guid.NewGuid();
-            var dependentNodeId = Guid.NewGuid();
-            var dependencyNodeId = Guid.NewGuid();
+            var sourceNodeId = Guid.NewGuid();
+            var targetNodeId = Guid.NewGuid();
             var delay = TimeSpan.FromMinutes(15);
 
             //Act
-            var edge = new DependencyEdge(id, dependentNodeId, dependencyNodeId, DependencyMode.Required ,0.8m, delay);
+            var edge = new DependencyEdge(id, sourceNodeId, targetNodeId, DependencyMode.Required ,0.8m, delay);
 
             //Assert
             Assert.Equal(id, edge.Id);
-            Assert.Equal(dependentNodeId, edge.DependentNodeId);
-            Assert.Equal(dependencyNodeId, edge.DependencyNodeId);
+            Assert.Equal(sourceNodeId, edge.SourceNodeId);
+            Assert.Equal(targetNodeId, edge.TargetNodeId);
             Assert.Equal(DependencyMode.Required, edge.Mode);
             Assert.Equal(0.8m, edge.ImportanceWeight);
             Assert.Equal(delay, edge.PropagationDelay);

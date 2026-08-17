@@ -5,6 +5,15 @@
     /// </summary>
     public sealed class AtlasNode
     {
+        public Guid Id { get; }
+        public string Name { get; }
+        public NodeType Type { get; }
+
+        /// <summary>
+        /// Krytyczność biznesowa węzła
+        /// </summary>
+        public int Criticality { get; }
+
         public AtlasNode(Guid id, string name, NodeType type, int criticality)
         {
             if(id == Guid.Empty)
@@ -19,14 +28,5 @@
             Type = type;
             Criticality = criticality;
         }
-
-        public Guid Id { get; set; }
-        public string Name { get; set; }
-        public NodeType Type { get; set; }
-
-        /// <summary>
-        /// Krytyczność biznesowa węzła
-        /// </summary>
-        public int Criticality { get; set; }
     }
 }
