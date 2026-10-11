@@ -31,7 +31,7 @@
             if(duplicateEdgeId != null)
                 throw new ArgumentException($"Zależność o identyfikatorze {duplicateEdgeId} występuje więcej niż raz.", nameof(edges));
 
-            // {Pozwalamy mieć tylko jedno bezpośrednie połączenie pomiędzy tą samą parą węzłów
+            // Pozwalamy mieć tylko jedno bezpośrednie połączenie pomiędzy tą samą parą węzłów
             var duplicateConnection = edgeList.GroupBy(edge => new { edge.SourceNodeId, edge.TargetNodeId }).FirstOrDefault(group => group.Count() > 1);
             if (duplicateConnection is not null)
                 throw new ArgumentException("Pomiędzy tymi samymi węzłami istnieje więcej niż jedna zależność.", nameof(edges));
