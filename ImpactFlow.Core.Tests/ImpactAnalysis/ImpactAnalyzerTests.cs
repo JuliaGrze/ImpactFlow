@@ -188,5 +188,40 @@ namespace ImpactFlow.Core.Tests.ImpactAnalysis
             Assert.Equal(new[] { sourceNode.Id, authorization.Id, orderHandling.Id }, orderImpact.Path);
         }
 
+        [Fact]
+        public void Analyze_ThrowsException_WhenObservedNodeDoesNotExistInGraph()
+        {
+            // Arrange — obserwacja wskazuje inny identyfikator niż węzeł należący do grafu.
+            var existingNode = new AtlasNode(Guid.NewGuid(), "Payment API", NodeType.ExternalService, 5);
+            var graph = new AtlasGraph(new[] { existingNode }, Array.Empty<DependencyEdge>());
+            var missingNodeId = Guid.NewGuid();
+            var observedAt = new DateTimeOffset(2026, 8, 21, 12, 0, 0, TimeSpan.FromHours(2));
+            var observation = new NodeObservation(missingNodeId, ObservedStatus.Unavailable, observedAt, 1m);
+            var analyzer = new ImpactAnalyzer();
+
+            // Act + Assert
+            Assert.Throws<KeyNotFoundException>(() => analyzer.Analyze(graph, observation));
+        }
+
+        [Fact]
+        public void Analyze_ExcludesNode_WhenNoPathConnectsItToSource()
+        {
+            // Arrange — oba węzły należą do grafu, ale nie są połączone.
+            var sourceNode = new AtlasNode(Guid.NewGuid(), "Payment API", NodeType.ExternalService, 5);
+            var unrelatedNode = new AtlasNode(Guid.NewGuid(), "System kadrowy", NodeType.System, 2);
+            var graph = new AtlasGraph(new[] { sourceNode, unrelatedNode }, Array.Empty<DependencyEdge>());
+            var observedAt = new DateTimeOffset(2026, 8, 21, 12, 0, 0, TimeSpan.FromHours(2));
+            var observation = new NodeObservation(sourceNode.Id, ObservedStatus.Unavailable, observedAt, 1m);
+            var analyzer = new ImpactAnalyzer();
+
+            // Act
+            var impacts = analyzer.Analyze(graph, observation);
+
+            // Assert — wynik zawiera tylko źródło, ponieważ drugi węzeł nie jest z nim połączony.
+            var sourceImpact = Assert.Single(impacts);
+            Assert.Equal(sourceNode.Id, sourceImpact.NodeId);
+
+        }
+
     }
 }
