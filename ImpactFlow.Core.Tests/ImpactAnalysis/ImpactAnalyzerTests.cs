@@ -70,5 +70,64 @@ namespace ImpactFlow.Core.Tests.ImpactAnalysis
             Assert.Equal(observedAt.AddMinutes(1), targetImpact.EffectiveAt);
             Assert.Equal(new[] { sourceNode.Id, targetNode.Id }, targetImpact.Path);
         }
+
+        [Fact]
+        public void Analyze_PropagatesImpactThroughEntireChain()
+        {
+            // Arrange — dwie kolejne zależności osłabiają wpływ i dodają opóźnienia.
+            var sourceNode = new AtlasNode(Guid.NewGuid(), "Payment API", NodeType.ExternalService, 5);
+            var authorization = new AtlasNode(Guid.NewGuid(), "Autoryzacja płatności", NodeType.ProcessStep, 5);
+            var orderHandling = new AtlasNode(Guid.NewGuid(), "Obsługa zamówienia", NodeType.BusinessProcess, 5);
+
+            var paymentEdge = new DependencyEdge(Guid.NewGuid(), sourceNode.Id, authorization.Id, DependencyMode.Required, 0.9m, TimeSpan.FromMinutes(1));
+            var orderEdge = new DependencyEdge(Guid.NewGuid(), authorization.Id, orderHandling.Id, DependencyMode.Required, 0.8m, TimeSpan.FromMinutes(5));
+            var graph = new AtlasGraph(new[] { sourceNode, authorization, orderHandling }, new[] { paymentEdge, orderEdge });
+
+            var observedAt = new DateTimeOffset(2026, 8, 21, 12, 0, 0, TimeSpan.FromHours(2));
+            var observation = new NodeObservation(sourceNode.Id, ObservedStatus.Unavailable, observedAt, 1m);
+            var analyzer = new ImpactAnalyzer();
+
+            // Act
+            var impacts = analyzer.Analyze(graph, observation);
+
+            // Assert — ostatni węzeł otrzymuje wpływ przez oba połączenia.
+            Assert.Equal(3, impacts.Count);
+            var orderImpact = Assert.Single(impacts, impact => impact.NodeId == orderHandling.Id);
+
+            Assert.Equal(0.72m, orderImpact.ImpactRatio);
+            Assert.Equal(0.28m, orderImpact.RemainingCapacityRatio);
+            Assert.Equal(observedAt.AddMinutes(6), orderImpact.EffectiveAt);
+            Assert.Equal(new[] { sourceNode.Id, authorization.Id, orderHandling.Id }, orderImpact.Path);
+        }
+
+        [Fact]
+        public void Analyze_DoesNotRevisitNode_WhenGraphContainsCycle()
+        {
+            // Arrange — drugie połączenie prowadzi z powrotem do źródła.
+            var sourceNode = new AtlasNode(Guid.NewGuid(), "Payment API", NodeType.ExternalService, 5);
+            var authorization = new AtlasNode(Guid.NewGuid(), "Autoryzacja płatności", NodeType.ProcessStep, 5);
+
+            var forwardEdge = new DependencyEdge(Guid.NewGuid(), sourceNode.Id, authorization.Id, DependencyMode.Required, 0.9m, TimeSpan.FromMinutes(1));
+            var returnEdge = new DependencyEdge(Guid.NewGuid(), authorization.Id, sourceNode.Id, DependencyMode.Required, 1m, TimeSpan.FromMinutes(1));
+            var graph = new AtlasGraph(new[] { sourceNode, authorization }, new[] { forwardEdge, returnEdge });
+
+            var observedAt = new DateTimeOffset(2026, 8, 21, 12, 0, 0, TimeSpan.FromHours(2));
+            var observation = new NodeObservation(sourceNode.Id, ObservedStatus.Unavailable, observedAt, 1m);
+            var analyzer = new ImpactAnalyzer();
+
+            // Act
+            var impacts = analyzer.Analyze(graph, observation);
+
+            // Arrange 
+            Assert.Equal(2, impacts.Count);
+
+            var sourceImpact = Assert.Single(impacts, impact => impact.NodeId == sourceNode.Id);
+            var targetImpact = Assert.Single(impacts, impact => impact.NodeId == authorization.Id);
+
+            Assert.Equal(1m, sourceImpact.ImpactRatio);
+            Assert.Equal(new[] { sourceNode.Id }, sourceImpact.Path);
+            Assert.Equal(0.9m, targetImpact.ImpactRatio);
+            Assert.Equal(new[] { sourceNode.Id, authorization.Id }, targetImpact.Path);
+        }
     }
 }

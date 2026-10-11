@@ -23,18 +23,35 @@ namespace ImpactFlow.Core.ImpactAnalysis
             // Tworzymy listę wyników.Pierwszy wynik dotyczy źródła.
             var impacts = new List<NodeImpact> { sourceImpact };
 
-            // Na tym etapie analizujemy wyłącznie bezpośrednich odbiorców wpływu źródła.
-            // Pobieramy wszystkie połączenia wychodzące ze źródła. Dla każdego obliczamy wynik węzła docelowego.
-            foreach (var edge in graph.GetOutgoingEdges(observation.NodeId)) 
-            {
-                // Siła problemu * waga połącznia
-                var impactRatio = sourceImpact.ImpactRatio * edge.ImportanceWeight;
-                // Opóźnienie
-                var effectiveAt = sourceImpact.EffectiveAt + edge.PropagationDelay;
-                // Droga
-                var path = new[] { observation.NodeId, edge.TargetNodeId };
+            // Kolejka wyników, z których trzeba jeszcze przenieść wpływ na następne węzły.
+            var pendingImpacts = new Queue<NodeImpact>();
+            pendingImpacts.Enqueue(sourceImpact); //dodanie elemntu na koniec kolejki
 
-                impacts.Add(new NodeImpact(edge.TargetNodeId, impactRatio, effectiveAt, path));
+            // Wyjmujemy pierwszy wynik z kolejki. Pętla kończy się, gdy kolejka jest pusta.
+            while (pendingImpacts.TryDequeue(out var currentImpact))
+            {
+                foreach (var edge in graph.GetOutgoingEdges(currentImpact.NodeId))
+                {
+                    // Pomijamy powrót do węzła już obecnego w tej ścieżce, np. A → B → A.
+                    if (currentImpact.Path.Contains(edge.TargetNodeId)) 
+                        continue;
+
+                    // Kolejny węzeł przejmuje część aktualnego wpływu, np. 90% × 0,8 = 72%.
+                    var impactRatio = currentImpact.ImpactRatio * edge.ImportanceWeight;
+
+                    // Opóźnienia sumują się wzdłuż ścieżki, np. 12:01 + 5 minut = 12:06.
+                    var effectiveAt = currentImpact.EffectiveAt + edge.PropagationDelay;
+
+                    // Zachowujemy dotychczasową drogę i dopisujemy kolejny węzeł.
+                    var path = currentImpact.Path.Append(edge.TargetNodeId);
+                    var targetImpact = new NodeImpact(edge.TargetNodeId, impactRatio, effectiveAt, path);
+
+                    // Zachowujemy obliczony wynik do zwrócenia użytkownikowi.
+                    impacts.Add(targetImpact);
+
+                    // Zaplanujemy również analizę jego połączeń, aby problem przeszedł dalej.
+                    pendingImpacts.Enqueue(targetImpact);
+                }
             }
             return impacts.AsReadOnly();
         }
