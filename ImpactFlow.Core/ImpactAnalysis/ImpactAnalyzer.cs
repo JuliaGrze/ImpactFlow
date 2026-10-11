@@ -1,5 +1,4 @@
 ﻿using ImpactFlow.Core.Atlas;
-using System.Security.Cryptography;
 
 namespace ImpactFlow.Core.ImpactAnalysis
 {
@@ -53,7 +52,14 @@ namespace ImpactFlow.Core.ImpactAnalysis
                     pendingImpacts.Enqueue(targetImpact);
                 }
             }
-            return impacts.AsReadOnly();
+
+            // Dla każdego węzła wybieramy największy wpływ.
+            // Przy równym wpływie wybieramy ścieżkę, której skutek pojawia się wcześniej.
+            return impacts
+                .GroupBy(impact => impact.NodeId)
+                .Select(group => group.OrderByDescending(impact => impact.ImpactRatio).ThenBy(impact => impact.EffectiveAt).First())
+                .ToList()
+                .AsReadOnly();
         }
     }
 }

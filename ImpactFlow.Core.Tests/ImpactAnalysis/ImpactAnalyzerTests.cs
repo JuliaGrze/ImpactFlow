@@ -129,5 +129,64 @@ namespace ImpactFlow.Core.Tests.ImpactAnalysis
             Assert.Equal(0.9m, targetImpact.ImpactRatio);
             Assert.Equal(new[] { sourceNode.Id, authorization.Id }, targetImpact.Path);
         }
+
+        [Fact]
+        public void Analyze_ReturnsStrongestImpact_WhenMultiplePathsReachSameNode()
+        {
+            // Arrange — bezpośrednia droga daje 40%, a droga przez autoryzację daje 72%.
+            var sourceNode = new AtlasNode(Guid.NewGuid(), "Payment API", NodeType.ExternalService, 5);
+            var authorization = new AtlasNode(Guid.NewGuid(), "Autoryzacja płatności", NodeType.ProcessStep, 5);
+            var orderHandling = new AtlasNode(Guid.NewGuid(), "Obsługa zamówienia", NodeType.BusinessProcess, 5);
+
+            var directEdge = new DependencyEdge(Guid.NewGuid(), sourceNode.Id, orderHandling.Id, DependencyMode.Required, 0.4m, TimeSpan.FromMinutes(1));
+            var paymentEdge = new DependencyEdge(Guid.NewGuid(), sourceNode.Id, authorization.Id, DependencyMode.Required, 0.9m, TimeSpan.FromMinutes(1));
+            var orderEdge = new DependencyEdge(Guid.NewGuid(), authorization.Id, orderHandling.Id, DependencyMode.Required, 0.8m, TimeSpan.FromMinutes(5));
+            var graph = new AtlasGraph(new[] { sourceNode, authorization, orderHandling }, new[] { directEdge, paymentEdge, orderEdge });
+
+            var observedAt = new DateTimeOffset(2026, 8, 21, 12, 0, 0, TimeSpan.FromHours(2));
+            var observation = new NodeObservation(sourceNode.Id, ObservedStatus.Unavailable, observedAt, 1m);
+            var analyzer = new ImpactAnalyzer();
+
+            // Act
+            var impacts = analyzer.Analyze(graph, observation);
+
+            // Assert — każdy węzeł ma jeden wynik; dla zamówień wygrywa droga przez autoryzację.
+            Assert.Equal(3, impacts.Count);
+            var orderImpact = Assert.Single(impacts, impact => impact.NodeId == orderHandling.Id);
+
+            Assert.Equal(0.72m, orderImpact.ImpactRatio);
+            Assert.Equal(observedAt.AddMinutes(6), orderImpact.EffectiveAt);
+            Assert.Equal(new[] { sourceNode.Id, authorization.Id, orderHandling.Id }, orderImpact.Path);
+        }
+
+        [Fact]
+        public void Analyze_ReturnsEarlierImpact_WhenPathsHaveEqualImpact()
+        {
+            // Arrange — obie drogi dają 50%, ale bezpośrednia dociera później.
+            var sourceNode = new AtlasNode(Guid.NewGuid(), "Payment API", NodeType.ExternalService, 5);
+            var authorization = new AtlasNode(Guid.NewGuid(), "Autoryzacja płatności", NodeType.ProcessStep, 5);
+            var orderHandling = new AtlasNode(Guid.NewGuid(), "Obsługa zamówienia", NodeType.BusinessProcess, 5);
+
+            var directEdge = new DependencyEdge(Guid.NewGuid(), sourceNode.Id, orderHandling.Id, DependencyMode.Required, 0.5m, TimeSpan.FromMinutes(10));
+            var paymentEdge = new DependencyEdge(Guid.NewGuid(), sourceNode.Id, authorization.Id, DependencyMode.Required, 1m, TimeSpan.FromMinutes(1));
+            var orderEdge = new DependencyEdge(Guid.NewGuid(), authorization.Id, orderHandling.Id, DependencyMode.Required, 0.5m, TimeSpan.FromMinutes(2));
+            var graph = new AtlasGraph(new[] { sourceNode, authorization, orderHandling }, new[] { directEdge, paymentEdge, orderEdge });
+
+            var observedAt = new DateTimeOffset(2026, 8, 21, 12, 0, 0, TimeSpan.FromHours(2));
+            var observation = new NodeObservation(sourceNode.Id, ObservedStatus.Unavailable, observedAt, 1m);
+            var analyzer = new ImpactAnalyzer();
+
+            // Act
+            var impacts = analyzer.Analyze(graph, observation);
+
+            // Assert — przy równym wpływie wygrywa droga docierająca po 3 minutach.
+            Assert.Equal(3, impacts.Count);
+            var orderImpact = Assert.Single(impacts, impact => impact.NodeId == orderHandling.Id);
+
+            Assert.Equal(0.5m, orderImpact.ImpactRatio);
+            Assert.Equal(observedAt.AddMinutes(3), orderImpact.EffectiveAt);
+            Assert.Equal(new[] { sourceNode.Id, authorization.Id, orderHandling.Id }, orderImpact.Path);
+        }
+
     }
 }
