@@ -5,10 +5,10 @@
     /// </summary>
     public enum NodeType
     {
-        BusinessProcess,
-        ProcessStep,
-        System,
-        ExternalService,
-        Resource
+        BusinessProcess, // np.: Obsługa zamówienia
+        ProcessStep, // np.: Autoryzacja płatności
+        System, // np.: System magazynowy
+        ExternalService, // np.: Payment API 
+        Resource // np.: Operator magazynu 
     }
 }
