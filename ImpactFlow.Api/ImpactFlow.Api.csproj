@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ImpactFlow.Application\ImpactFlow.Application.csproj" />
     <ProjectReference Include="..\ImpactFlow.Core\ImpactFlow.Core.csproj" />
   </ItemGroup>
 

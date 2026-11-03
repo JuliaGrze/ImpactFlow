@@ -1,5 +1,6 @@
 <Solution>
   <Project Path="ImpactFlow.Api/ImpactFlow.Api.csproj" Id="fa3d8c6f-16b5-44a7-8c50-f70b7e289ab7" />
+  <Project Path="ImpactFlow.Application/ImpactFlow.Application.csproj" Id="073f78fb-3282-4c2e-92f8-b3584f0e9c96" />
   <Project Path="ImpactFlow.Core.Tests/ImpactFlow.Core.Tests.csproj" Id="8939628f-5940-45dc-9465-11e69991e7aa" />
   <Project Path="ImpactFlow.Core/ImpactFlow.Core.csproj" Id="a478f61b-de47-4ac2-ac4e-f1d249b87ff7" />
 </Solution>
