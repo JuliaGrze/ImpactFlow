@@ -1,6 +1,14 @@
+using ImpactFlow.Api;
+
 var builder = WebApplication.CreateBuilder(args);
 
+if (builder.Environment.IsDevelopment())
+{
+    builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true);
+}
+
 builder.Services.AddOpenApi();
+builder.Services.AddImpactFlowServices(builder.Configuration);
 
 var app = builder.Build();
 
@@ -11,13 +19,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapGet("/api/health", () =>
-{
-    return Results.Ok(new
-    {
-        status = "ok",
-        product = "ImpactFlow"
-    });
-});
+app.MapGet("/api/health", () => Results.Ok(new { status = "ok", product = "ImpactFlow" }));
+
+app.MapControllers();
 
 app.Run();
