@@ -1,5 +1,4 @@
-﻿using ImpactFlow.Core.Atlas;
-using ImpactFlow.Core.ImpactAnalysis;
+﻿using ImpactFlow.Core.ImpactAnalysis;
 
 namespace ImpactFlow.Application.ImpactAnalysis.AnalyzeImpact
 {
@@ -19,8 +18,10 @@ namespace ImpactFlow.Application.ImpactAnalysis.AnalyzeImpact
         public IReadOnlyList<NodeImpact> Handle(AnalyzeImpactInput input)
         {
             ArgumentNullException.ThrowIfNull(input);
+            ArgumentNullException.ThrowIfNull(input.Version);
 
-            var graph = new AtlasGraph(input.Nodes, input.Edges);
+            var graph = input.Version.CreateAnalysisGraph();
+
             return _analyzer.Analyze(graph, input.Observation);
         }
 

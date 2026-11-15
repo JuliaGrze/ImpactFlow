@@ -3,8 +3,8 @@ using ImpactFlow.Core.ImpactAnalysis;
 
 namespace ImpactFlow.Application.ImpactAnalysis.AnalyzeImpact
 {
-    /// <summary>
-    /// Dane potrzebne do wykonania analizy wpływu: elementy mapy, połączenia między nimi oraz obserwacja stanu węzła źródłowego
+    //// <summary>
+    /// Wersja mapy i obserwacja stanu źródła potrzebne do analizy wpływu.
     /// </summary>
-    public sealed record AnalyzeImpactInput(IReadOnlyList<AtlasNode> Nodes, IReadOnlyList<DependencyEdge> Edges, NodeObservation Observation);
+    public sealed record AnalyzeImpactInput(AtlasVersion Version, NodeObservation Observation);
 }
