@@ -8,9 +8,9 @@ namespace ImpactFlow.Api.Controllers.Atlas
     [Route("api/atlases")]
     public class AtlasesController : ControllerBase
     {
-        private readonly CreateAtlasHandler _createAtlasHandler;
+        private readonly AtlasService _createAtlasHandler;
 
-        public AtlasesController(CreateAtlasHandler createAtlasHandler)
+        public AtlasesController(AtlasService createAtlasHandler)
         {
             _createAtlasHandler = createAtlasHandler;
         }
@@ -18,7 +18,7 @@ namespace ImpactFlow.Api.Controllers.Atlas
         [HttpPost]
         public async Task<ActionResult<CreateAtlasResponse>> Create(CreateAtlasRequest request, CancellationToken cancellationToken)
         {
-            var (map, draft) = await _createAtlasHandler.HandleAsync(request.Name, cancellationToken);
+            var (map, draft) = await _createAtlasHandler.CreateAsync(request.Name, cancellationToken);
             var response = new CreateAtlasResponse(map.Id, map.Name, draft.Id);
 
             return StatusCode(StatusCodes.Status201Created, response);

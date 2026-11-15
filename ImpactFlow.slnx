@@ -5,5 +5,7 @@
   </Folder>
   <Project Path="ImpactFlow.Api/ImpactFlow.Api.csproj" Id="fa3d8c6f-16b5-44a7-8c50-f70b7e289ab7" />
   <Project Path="ImpactFlow.Application/ImpactFlow.Application.csproj" Id="073f78fb-3282-4c2e-92f8-b3584f0e9c96" />
+  <Project Path="ImpactFlow.Contracts/ImpactFlow.Contracts.csproj" Id="5fa79eee-e6da-413c-a691-9a9643d3fc78" />
   <Project Path="ImpactFlow.Core/ImpactFlow.Core.csproj" Id="a478f61b-de47-4ac2-ac4e-f1d249b87ff7" />
+  <Project Path="ImpactFlow.Infrastructure/ImpactFlow.Infrastructure.csproj" Id="eb86c8df-d272-4a7c-b2ab-cbae1a10d1bf" />
 </Solution>

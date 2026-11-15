@@ -7,7 +7,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="MediatR" Version="15.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ImpactFlow.Contracts\ImpactFlow.Contracts.csproj" />
     <ProjectReference Include="..\ImpactFlow.Core\ImpactFlow.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Atlas\Interfaces\" />
   </ItemGroup>
 
 </Project>
