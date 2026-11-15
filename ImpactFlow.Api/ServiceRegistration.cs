@@ -7,6 +7,7 @@ namespace ImpactFlow.Api
     {
         public static IServiceCollection AddImpactFlowServices(this IServiceCollection services)
         {
+            services.AddControllers();
             AddAtlasServices(services);
 
             return services;
