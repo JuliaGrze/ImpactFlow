@@ -71,5 +71,15 @@
 
             Status = AtlasVersionStatus.Published;
         }
+
+        /// <summary>
+        /// Tworzy graf do bieżącej analizy na podstawie opublikowanej wersji mapy.
+        /// </summary>
+        public AtlasGraph CreateAnalysisGraph()
+        {
+            if(Status != AtlasVersionStatus.Published) throw new InvalidOperationException("Do bieżącej analizy można użyć tylko opublikowanej wersji.");
+
+            return new AtlasGraph(_nodes, _edges);
+        }
     }
 }
